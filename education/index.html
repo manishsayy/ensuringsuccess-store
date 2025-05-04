@@ -1,4 +1,4 @@
-<!-- Educational Cart v1.4.1-Fixed – Ensuring Success -->
+<!-- Educational Cart – Ensuring Success (v1.5_COMPLIANCE_LOCKED_RESTORED) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -20,108 +20,115 @@
 
     <div class="cart-box shadow-sm mt-5">
       <h5><i class="bi bi-cart"></i> Cart Preview</h5>
-      <ul id="cart-items" class="list-group list-group-flush mb-2"></ul>
-      <p class="cart-total" id="cart-total">Total Cart Value: ₹0</p>
+      <div id="cartItems"></div>
+      <p class="cart-total"><strong>Total Cart Value:</strong> ₹<span id="totalPrice">0</span></p>
       <div class="mb-2">
-        <label for="emailInput" class="form-label">Enter your email</label>
-        <input type="email" id="emailInput" class="form-control" placeholder="your@email.com" />
+        <label for="userEmail" class="form-label">Enter your email</label>
+        <input type="email" id="userEmail" class="form-control" placeholder="you@example.com" required />
       </div>
-      <button class="btn btn-success checkout-btn" onclick="proceedToCheckout()">Proceed to Checkout</button>
+      <button class="btn btn-success checkout-btn" onclick="submitCart()">Proceed to Checkout</button>
     </div>
   </div>
 
   <script>
-    const sheetUrl = 'https://script.google.com/macros/s/AKfycbzkEVafyH8GVVd3asYvE4tgYCRtd4AO8acdtZ9MXs9GoRwNSCpRU/exec';
+    const sheetURL = 'https://script.google.com/macros/s/AKfycbzkEVafyH8GVVd3asYvE4tgYCRtd4AO8acdtZ9MXs9GoRwNSCpRU/exec';
     const cart = [];
 
     function fetchProducts() {
-      fetch(sheetUrl)
+      fetch(sheetURL)
         .then(res => res.json())
         .then(data => {
           const products = data.filter(p => p.Type === 'educational' && p.Active === 'Y');
           const container = document.getElementById('product-container');
-          products.forEach(p => {
-            const col = document.createElement('div');
-            col.className = 'col-md-4';
-            const card = document.createElement('div');
-            card.className = 'card p-3 h-100';
+          container.innerHTML = "";
 
-            const imgTag = p['Image URL']
-              ? `<img src="${p['Image URL']}" alt="${p.Name}" class="card-img-top mb-2" onerror="this.style.display='none';">`
+          products.forEach(p => {
+            const card = document.createElement('div');
+            card.className = 'col-md-4 mb-4';
+            const imgTag = p["Image URL"]
+              ? `<img src="${p["Image URL"]}" class="card-img-top" alt="${p.Name}" onerror="this.style.display='none';">`
               : "";
 
-            card.innerHTML += `
-              ${imgTag}
-              <h5 class="card-title">${p.Name}</h5>
-              <p class="fw-bold">₹${p.Price}</p>
-              <p class="card-text">${p.Description}</p>
-              <button class="btn btn-primary" onclick='addToCart(${JSON.stringify(p)})'>Add to Cart</button>
-            `;
-
-            col.appendChild(card);
-            container.appendChild(col);
+            card.innerHTML = `
+              <div class="card h-100 shadow-sm">
+                ${imgTag}
+                <div class="card-body">
+                  <h5 class="card-title">${p.Name}</h5>
+                  <h6 class="card-subtitle mb-2 text-muted">₹${p.Price}</h6>
+                  <p class="card-text">${p.Description}</p>
+                  <button class="btn btn-primary" onclick='addToCart(${JSON.stringify(p)})'>Add to Cart</button>
+                </div>
+              </div>`;
+            container.appendChild(card);
           });
+        })
+        .catch(error => {
+          console.error("❌ Failed to fetch products:", error);
+          document.getElementById('product-container').innerHTML = `<p class='text-danger'>Failed to load products.</p>`;
         });
     }
 
     function addToCart(product) {
       cart.push(product);
-      updateCartDisplay();
-      console.log("🛒 Added to cart:", product.Name);
+      updateCart();
     }
 
-    function updateCartDisplay() {
-      const cartList = document.getElementById('cart-items');
-      const totalDisplay = document.getElementById('cart-total');
-      cartList.innerHTML = '';
+    function updateCart() {
+      const cartContainer = document.getElementById("cartItems");
+      const totalPriceEl = document.getElementById("totalPrice");
+      cartContainer.innerHTML = "";
       let total = 0;
-      cart.forEach(p => {
-        const li = document.createElement('li');
-        li.className = 'list-group-item';
-        li.innerText = `${p.Name} – ₹${p.Price}`;
-        cartList.appendChild(li);
-        total += Number(p.Price);
+      cart.forEach(item => {
+        const line = document.createElement("p");
+        line.textContent = `${item.Name} – ₹${item.Price}`;
+        cartContainer.appendChild(line);
+        total += parseInt(item.Price);
       });
-      totalDisplay.innerText = `Total Cart Value: ₹${total}`;
+      totalPriceEl.textContent = total;
     }
 
     function generateRefID() {
-      const now = new Date();
-      const yyyy = now.getFullYear();
-      const mm = String(now.getMonth() + 1).padStart(2, '0');
-      const dd = String(now.getDate()).padStart(2, '0');
+      const date = new Date();
+      const yyyymmdd = date.toISOString().slice(0, 10).replace(/-/g, "");
       const rand = Math.floor(1000 + Math.random() * 9000);
-      return `Ref${yyyy}${mm}${dd}${rand}`;
+      return `Ref${yyyymmdd}${rand}`;
     }
 
-    function proceedToCheckout() {
-      const email = document.getElementById('emailInput').value.trim();
-      if (!email || !email.includes('@')) {
-        alert('Please enter a valid email address.');
+    function submitCart() {
+      const email = document.getElementById("userEmail").value.trim();
+      if (!email || !email.includes("@")) {
+        alert("Please enter a valid email address.");
         return;
       }
       if (cart.length === 0) {
-        alert('Your cart is empty.');
+        alert("Your cart is empty.");
         return;
       }
 
       const refID = generateRefID();
-      const total = cart.reduce((sum, p) => sum + Number(p.Price), 0);
-      const items = cart.map(p => ({ name: p.Name, price: p.Price }));
 
-      const payload = { email, refID, total, items };
-      console.log("📦 Sending payload to backend:", payload);
+      const payload = {
+        email: email,
+        refID: refID,
+        items: cart.map(item => ({
+          id: item.ID,
+          name: item.Name,
+          price: item.Price
+        })),
+        total: cart.reduce((sum, item) => sum + parseInt(item.Price), 0)
+      };
 
-      fetch(sheetUrl, {
+      console.log("📦 Sending Payload:", payload);
+
+      fetch(sheetURL, {
         method: 'POST',
-        body: JSON.stringify(payload),
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
       })
       .then(res => res.json())
-      .then(response => {
-        console.log("✅ Backend acknowledged receipt:", response);
-        // No popup here — refID retained silently
-        // Payment link or confirmation will be handled in Phase 2.4
+      .then(data => {
+        console.log("✅ Submission response:", data);
+        // 🔄 Future Phase: Redirect to payment or show confirmation page
       });
     }
 
