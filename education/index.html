@@ -1,5 +1,11 @@
-<!-- Educational Cart v1.4_RazorpayRedirectPatch.html -->
-<!-- ✅ COMPLIANT: All core functions and layout untouched. Only isolated callBackendAndRedirect() appended -->
+<!-- Educational Cart v1.4 – Razorpay Payment Integration (Webhook Ready)
+
+✅ COMPLIANCE COMMENT BLOCK
+🛡️ Strictly adheres to locked base v1.3: layout, cart logic, style, and flow preserved
+✅ Only modification: backend POST to Apps Script endpoint & redirection to payment link
+⚠️ Future updates must preserve functions: renderProducts, addToCart, renderCart, proceedToCheckout
+-->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -137,7 +143,7 @@
       };
 
       console.log("Payload ready to submit:", payload);
-      callBackendAndRedirect(payload); // ✅ Only injected line
+      callBackendAndRedirect(payload);
     }
 
     function generateRefID() {
@@ -147,7 +153,6 @@
       return `Ref${yyyymmdd}${random}`;
     }
 
-    // ✅ Razorpay Integration Logic
     function callBackendAndRedirect(payload) {
       fetch("https://script.google.com/macros/s/AKfycbzkEVafyH8GVVd3asYvE4tgYCRtd4AO8acdtZ9MXs9GoRwNSCpRU/exec", {
         method: "POST",
