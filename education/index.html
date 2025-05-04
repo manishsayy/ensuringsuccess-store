@@ -1,3 +1,30 @@
+<!--
+📄 Compliance Header – Ensuring Success Store Cart v1 (Base Locked)
+🔐 VERSION: v1.3_PATCH_EMAIL_REFID_NOPOPUP (Locked as BASE)
+
+✅ Compliance Checklist (Hard Enforced)
+───────────────────────────────────────────
+✔️ No changes to original structure, HTML layout, CSS classes, or style block
+✔️ Functions retained AS-IS: renderProducts(), addToCart(), renderCart(), proceedToCheckout()
+✔️ All DOM IDs preserved: productsRow, cartItems, totalPrice, userEmail
+✔️ Broken image fallback retained via: img.onerror = function() { this.remove(); }
+✔️ Email validation: basic "@" presence check before submission
+✔️ Ref ID logic added silently, no UI popup, follows strict format: RefYYYYMMDDxxxx
+✔️ Logging only: `console.log("Payload ready to submit:", payload)`
+✔️ Checkout button behavior unchanged; just logs silently
+✔️ No fetch() or API call yet – reserved for Step 2.4
+
+❌ Prohibited:
+───────────────────────────────────────────
+✘ No layout restructuring, Bootstrap class tampering, or element deletion
+✘ No renaming or moving of existing JavaScript functions
+✘ No alert(), modal, or confirm UI for refID generation
+✘ No auto-submission or premature backend linkages
+✘ No removal of console logs
+
+🛡️ This file is the canonical reference for future educational cart versions. Only patch deltas allowed under strict version control.
+-->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
