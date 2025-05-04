@@ -1,76 +1,96 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
   <title>Educational Cart</title>
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
   <style>
-    body {
-      padding: 20px;
-    }
     .card {
       width: 250px;
-      margin: 10px;
+      margin: 15px;
       display: inline-block;
       vertical-align: top;
     }
-    .card img {
-      max-width: 100%;
-      height: 150px;
-      object-fit: cover;
+    #cart-display {
+      margin-top: 40px;
+      padding: 20px;
+      background: #f9f9f9;
+      border: 1px solid #ddd;
+    }
+    #cart-display h4 {
+      margin-bottom: 15px;
     }
   </style>
 </head>
-<body>
-  <div class="container">
-    <h2 class="text-primary">Welcome to the Educational Cart</h2>
-    <div id="product-container" class="mt-4"></div>
+<body class="container">
+  <h2 class="text-primary mt-4 mb-4">Welcome to the Educational Cart</h2>
+
+  <div id="product-container" class="d-flex flex-wrap"></div>
+
+  <div id="cart-display">
+    <h4>🛒 Cart Preview</h4>
+    <ul id="cart-items" class="list-group"></ul>
   </div>
 
   <script>
-    // 🔸 Static sample products
     const products = [
       {
+        id: "P1",
         name: "NISM Series XV: Research Analyst",
-        price: "₹399",
+        price: 399,
         description: "Full-length mock test + solution PDF",
-        image: "https://via.placeholder.com/250x150.png?text=Research+Analyst"
+        image: "https://i.imgur.com/tL3n2jR.png"
       },
       {
+        id: "P2",
         name: "Investment Adviser Level 1 (X-A)",
-        price: "₹349",
+        price: 349,
         description: "Chapterwise quiz + analysis",
-        image: "https://via.placeholder.com/250x150.png?text=IA+Level+1"
+        image: "https://i.imgur.com/JYk9STU.png"
       }
     ];
 
-    // ✅ Step 2.2.1 – Create in-memory cart
-    let cart = [];
+    const cart = [];
 
-    // 🔸 Display products
     const container = document.getElementById("product-container");
+    const cartList = document.getElementById("cart-items");
 
-    products.forEach((p, index) => {
+    function renderCart() {
+      cartList.innerHTML = "";
+      cart.forEach(item => {
+        const li = document.createElement("li");
+        li.className = "list-group-item";
+        li.textContent = `${item.name} – ₹${item.price}`;
+        cartList.appendChild(li);
+      });
+    }
+
+    products.forEach(p => {
       const card = document.createElement("div");
       card.className = "card";
 
       card.innerHTML = `
-        <img src="${p.image}" alt="${p.name}">
+        <img src="${p.image}" class="card-img-top" alt="${p.name}">
         <div class="card-body">
           <h5 class="card-title">${p.name}</h5>
-          <p class="card-text"><strong>${p.price}</strong></p>
+          <p class="card-text"><strong>₹${p.price}</strong></p>
           <p class="card-text">${p.description}</p>
-          <button class="btn btn-primary" onclick="addToCart(${index})">Add to Cart</button>
+          <button class="btn btn-primary">Add to Cart</button>
         </div>
       `;
 
+      const btn = card.querySelector("button");
+      btn.addEventListener("click", () => {
+        if (!cart.find(item => item.id === p.id)) {
+          cart.push(p);
+          renderCart();
+          console.log("Added to cart:", p);
+        } else {
+          console.log("Already in cart:", p);
+        }
+      });
+
       container.appendChild(card);
     });
-
-    // (placeholder function, to be updated in 2.2.2)
-    function addToCart(index) {
-      console.log("Clicked Add to Cart for", products[index]);
-    }
   </script>
 </body>
 </html>
