@@ -1,147 +1,131 @@
+<!-- Educational Cart v1.4.1-Fixed – Ensuring Success -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Educational Cart – Ensuring Success</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    .card { min-height: 100%; }
+    .cart-box { background-color: #f9f9f9; padding: 20px; border-radius: 10px; margin-top: 30px; }
+    .cart-total { font-weight: bold; font-size: 16px; }
+    .checkout-btn { width: 100%; margin-top: 10px; }
+  </style>
 </head>
-<body class="bg-light">
-  <div class="container py-4">
-    <h2 class="text-primary mb-4 fw-bold">Welcome to the Educational Cart</h2>
-    <div id="product-container" class="row gy-4"></div>
+<body class="p-4">
+  <div class="container">
+    <h2 class="text-primary mb-4">Welcome to the Educational Cart</h2>
+    <div id="product-container" class="row g-4"></div>
 
-    <div class="card mt-5 shadow-sm" style="max-width: 700px;">
-      <div class="card-body">
-        <h5 class="card-title">
-          🛒 Cart Preview
-        </h5>
-        <div id="cart-items" class="mb-3"></div>
-        <hr>
-        <p><strong>Total Cart Value:</strong> ₹<span id="cart-total">0</span></p>
-        <div class="mb-3">
-          <label for="userEmail" class="form-label">Enter your email</label>
-          <input type="email" class="form-control" id="userEmail" placeholder="you@example.com" required>
-        </div>
-        <button class="btn btn-success" onclick="proceedToCheckout()">Proceed to Checkout</button>
+    <div class="cart-box shadow-sm mt-5">
+      <h5><i class="bi bi-cart"></i> Cart Preview</h5>
+      <ul id="cart-items" class="list-group list-group-flush mb-2"></ul>
+      <p class="cart-total" id="cart-total">Total Cart Value: ₹0</p>
+      <div class="mb-2">
+        <label for="emailInput" class="form-label">Enter your email</label>
+        <input type="email" id="emailInput" class="form-control" placeholder="your@email.com" />
       </div>
+      <button class="btn btn-success checkout-btn" onclick="proceedToCheckout()">Proceed to Checkout</button>
     </div>
   </div>
 
   <script>
-    const endpoint = "https://script.google.com/macros/s/AKfycbyNyZz3eBtC12jhj4PHUO_LC7uXlEQzE7qYAS2XrLyRXwUkxxgyK0EQe-sN1R0Jcd5z/exec";
+    const sheetUrl = 'https://script.google.com/macros/s/AKfycbzkEVafyH8GVVd3asYvE4tgYCRtd4AO8acdtZ9MXs9GoRwNSCpRU/exec';
     const cart = [];
 
-    function renderProducts(products) {
-      const container = document.getElementById("product-container");
-      container.innerHTML = "";
+    function fetchProducts() {
+      fetch(sheetUrl)
+        .then(res => res.json())
+        .then(data => {
+          const products = data.filter(p => p.Type === 'educational' && p.Active === 'Y');
+          const container = document.getElementById('product-container');
+          products.forEach(p => {
+            const col = document.createElement('div');
+            col.className = 'col-md-4';
+            const card = document.createElement('div');
+            card.className = 'card p-3 h-100';
 
-      products.forEach(product => {
-        if (product.Type === "educational" && product.Active === "Y") {
-          const col = document.createElement("div");
-          col.className = "col-md-4";
-          const card = document.createElement("div");
-          card.className = "card h-100";
+            const imgTag = p['Image URL']
+              ? `<img src="${p['Image URL']}" alt="${p.Name}" class="card-img-top mb-2" onerror="this.style.display='none';">`
+              : "";
 
-          // Handle image only if valid
-          let imageTag = "";
-          if (product["Image URL"] && product["Image URL"].startsWith("http")) {
-            imageTag = `<img src="${product["Image URL"]}" class="card-img-top" alt="${product.Name}" onerror="this.style.display='none'">`;
-          }
+            card.innerHTML += `
+              ${imgTag}
+              <h5 class="card-title">${p.Name}</h5>
+              <p class="fw-bold">₹${p.Price}</p>
+              <p class="card-text">${p.Description}</p>
+              <button class="btn btn-primary" onclick='addToCart(${JSON.stringify(p)})'>Add to Cart</button>
+            `;
 
-          card.innerHTML = `
-            ${imageTag}
-            <div class="card-body d-flex flex-column">
-              <h5 class="card-title">${product.Name}</h5>
-              <p class="card-text fw-semibold text-dark">₹${product.Price}</p>
-              <p class="card-text small text-muted">${product.Description}</p>
-              <button class="btn btn-primary mt-auto" onclick='addToCart(${JSON.stringify(product)})'>Add to Cart</button>
-            </div>
-          `;
-          col.appendChild(card);
-          container.appendChild(col);
-        }
-      });
+            col.appendChild(card);
+            container.appendChild(col);
+          });
+        });
     }
 
     function addToCart(product) {
-      cart.push({
-        id: product.ID,
-        name: product.Name,
-        price: Number(product.Price)
-      });
-      updateCartUI();
+      cart.push(product);
+      updateCartDisplay();
+      console.log("🛒 Added to cart:", product.Name);
     }
 
-    function updateCartUI() {
-      const container = document.getElementById("cart-items");
-      container.innerHTML = "";
+    function updateCartDisplay() {
+      const cartList = document.getElementById('cart-items');
+      const totalDisplay = document.getElementById('cart-total');
+      cartList.innerHTML = '';
       let total = 0;
-
-      cart.forEach(item => {
-        total += item.price;
-        const p = document.createElement("p");
-        p.textContent = `${item.name} – ₹${item.price}`;
-        container.appendChild(p);
+      cart.forEach(p => {
+        const li = document.createElement('li');
+        li.className = 'list-group-item';
+        li.innerText = `${p.Name} – ₹${p.Price}`;
+        cartList.appendChild(li);
+        total += Number(p.Price);
       });
+      totalDisplay.innerText = `Total Cart Value: ₹${total}`;
+    }
 
-      document.getElementById("cart-total").textContent = total;
+    function generateRefID() {
+      const now = new Date();
+      const yyyy = now.getFullYear();
+      const mm = String(now.getMonth() + 1).padStart(2, '0');
+      const dd = String(now.getDate()).padStart(2, '0');
+      const rand = Math.floor(1000 + Math.random() * 9000);
+      return `Ref${yyyy}${mm}${dd}${rand}`;
     }
 
     function proceedToCheckout() {
-      const email = document.getElementById("userEmail").value.trim();
-      if (!validateEmail(email)) {
-        alert("Please enter a valid email address.");
+      const email = document.getElementById('emailInput').value.trim();
+      if (!email || !email.includes('@')) {
+        alert('Please enter a valid email address.');
         return;
       }
-
       if (cart.length === 0) {
-        alert("Cart is empty!");
+        alert('Your cart is empty.');
         return;
       }
 
-      const refId = generateRefId();
-      const total = cart.reduce((sum, item) => sum + item.price, 0);
-      const payload = {
-        email,
-        refId,
-        total,
-        items: cart
-      };
+      const refID = generateRefID();
+      const total = cart.reduce((sum, p) => sum + Number(p.Price), 0);
+      const items = cart.map(p => ({ name: p.Name, price: p.Price }));
 
-      fetch(endpoint, {
-        method: "POST",
+      const payload = { email, refID, total, items };
+      console.log("📦 Sending payload to backend:", payload);
+
+      fetch(sheetUrl, {
+        method: 'POST',
         body: JSON.stringify(payload),
-        headers: {
-          "Content-Type": "application/json"
-        }
-      }).then(() => {
-        // Silent success – no popup
-        // Phase 3: redirect or trigger payment will happen here
-      }).catch(error => {
-        alert("Checkout failed: " + error.message);
-      });
-    }
-
-    function validateEmail(email) {
-      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    }
-
-    function generateRefId() {
-      const now = new Date();
-      const datePart = now.toISOString().slice(0,10).replace(/-/g, '');
-      const randomPart = Math.floor(1000 + Math.random() * 9000);
-      return `Ref${datePart}${randomPart}`;
-    }
-
-    // Initial fetch
-    fetch(endpoint)
+        headers: { 'Content-Type': 'application/json' }
+      })
       .then(res => res.json())
-      .then(data => renderProducts(data))
-      .catch(err => {
-        document.getElementById("product-container").innerHTML = "<p class='text-danger'>Failed to load products.</p>";
-        console.error("Error fetching product data:", err);
+      .then(response => {
+        console.log("✅ Backend acknowledged receipt:", response);
+        // No popup here — refID retained silently
+        // Payment link or confirmation will be handled in Phase 2.4
       });
+    }
+
+    fetchProducts();
   </script>
 </body>
 </html>
