@@ -1,1 +1,82 @@
-<h1>This is the Educational Cart Page</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Educational Cart – Ensuring Success</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    h1 {
+      color: #0077cc;
+    }
+    #product-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .product-card {
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 16px;
+      width: 220px;
+    }
+    .product-card img {
+      width: 100%;
+      height: auto;
+      border-radius: 4px;
+    }
+    .add-to-cart {
+      background-color: #0077cc;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      cursor: pointer;
+      margin-top: 8px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Welcome to the Educational Cart</h1>
+  <div id="product-container">
+    <!-- JS will inject product cards here -->
+  </div>
+
+  <script>
+    const products = [
+      {
+        name: "NISM Series XV: Research Analyst",
+        price: "₹399",
+        description: "Full-length mock test + solution PDF",
+        image: "https://via.placeholder.com/200"
+      },
+      {
+        name: "Investment Adviser Level 1 (X-A)",
+        price: "₹349",
+        description: "Chapterwise quiz + analysis",
+        image: "https://via.placeholder.com/200"
+      }
+    ];
+
+    const container = document.getElementById("product-container");
+
+    products.forEach(p => {
+      const card = document.createElement("div");
+      card.className = "product-card";
+
+      card.innerHTML = `
+        <img src="${p.image}" alt="${p.name}">
+        <h3>${p.name}</h3>
+        <p><strong>${p.price}</strong></p>
+        <p>${p.description}</p>
+        <button class="add-to-cart">Add to Cart</button>
+      `;
+
+      container.appendChild(card);
+    });
+  </script>
+</body>
+</html>
