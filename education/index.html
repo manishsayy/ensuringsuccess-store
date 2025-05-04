@@ -34,7 +34,7 @@
   <div class="cart-preview">
     <h5>🛒 Cart Preview</h5>
     <ul id="cart-items" class="list-group mt-2"></ul>
-    <p class="mt-3 fw-bold">Total: ₹<span id="cart-total">0</span></p>
+    <p class="mt-3 fw-bold">Total Cart Value: ₹<span id="cart-total">0</span></p>
     <button class="btn btn-success mt-2" onclick="proceedToCheckout()">Proceed to Checkout</button>
   </div>
 
@@ -53,14 +53,8 @@
         price: 349,
         description: 'Chapterwise quiz + analysis',
         image: 'https://i.imgur.com/JYk9STU.png'
-      },
-      {
-        id: 'P3',
-        name: 'Algo Strategy Blueprint',
-        price: 799,
-        description: 'Access to backtest + delivery logic',
-        image: '' // missing image test case
       }
+      // Removed P3 (Algo Strategy Blueprint) from production
     ];
 
     const cart = [];
@@ -111,7 +105,7 @@
     }
 
     function proceedToCheckout() {
-      alert("This will be wired up in Step 2.3! For now, just a placeholder.");
+      alert("This will be wired in next step (2.3) — cart submission to backend.");
     }
 
     renderProducts();
