@@ -22,8 +22,7 @@
    ✅ Replaced renderProducts(); with fetchProducts();
 
 🔹 Apps Script Backend URL used:
-   fetch("https://script.google.com/macros/s/AKfycbzkEVafyH8GVVd3asYvE4tgYCRtd4AO8acdtZ9MXs9GoRwNSCpRU8na8YQmibSvL85KHA/exec")
-
+   https://script.google.com/macros/s/AKfycbzkEVafyH8GVVd3asYvE4tgYCRtd4AO8acdtZ9MXs9GoRwNSCpRU8na8YQmibSvL85KHA/exec
 
 🔐 Ready for Google Sites or GitHub Pages use
 <!DOCTYPE html>
@@ -94,12 +93,12 @@
         };
         card.appendChild(imgTag);
 
-        card.innerHTML += `
+        card.innerHTML += 
           <h5>${p.Name}</h5>
           <p><strong>₹${p.Price}</strong></p>
           <p>${p.Description}</p>
           <button class="btn btn-primary" onclick='addToCart(${JSON.stringify(p)})'>Add to Cart</button>
-        `;
+        ;
         container.appendChild(card);
       });
     }
@@ -119,7 +118,7 @@
         total += parseFloat(item.Price);
         const itemEl = document.createElement("div");
         itemEl.className = "border-bottom py-1";
-        itemEl.textContent = `${item.Name} – ₹${item.Price}`;
+        itemEl.textContent = ${item.Name} – ₹${item.Price};
         cartItems.appendChild(itemEl);
       });
 
@@ -157,11 +156,12 @@
       const now = new Date();
       const yyyymmdd = now.toISOString().slice(0, 10).replace(/-/g, "");
       const random = Math.floor(1000 + Math.random() * 9000);
-      return `Ref${yyyymmdd}${random}`;
+      return Ref${yyyymmdd}${random};
     }
 
     function callBackendAndRedirect(payload) {
-      fetch("fetch("https://script.google.com/macros/s/AKfycbzkEVafyH8GVVd3asYvE4tgYCRtd4AO8acdtZ9MXs9GoRwNSCpRU8na8YQmibSvL85KHA/exec")", {
+      fetch("https://script.google.com/macros/s/AKfycbzkEVafyH8GVVd3asYvE4tgYCRtd4AO8acdtZ9MXs9GoRwNSCpRU8na8YQmibSvL85KHA/exec")
+, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -189,8 +189,8 @@
         })
         .catch(err => {
           console.error("Error fetching products:", err);
-          document.getElementById("productsRow").innerHTML = `
-            <p class="text-danger">Failed to load products.</p>`;
+          document.getElementById("productsRow").innerHTML = 
+            <p class="text-danger">Failed to load products.</p>;
         });
     }
 
@@ -198,4 +198,5 @@
   </script>
 </body>
 </html>
+
 
