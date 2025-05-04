@@ -1,34 +1,34 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
   <title>Educational Cart</title>
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
+    body {
+      padding: 2rem;
+    }
     .card {
-      width: 250px;
-      margin: 15px;
-      display: inline-block;
-      vertical-align: top;
+      margin: 1rem;
+      width: 280px;
     }
-    #cart-display {
-      margin-top: 40px;
-      padding: 20px;
-      background: #f9f9f9;
-      border: 1px solid #ddd;
-    }
-    #cart-display h4 {
-      margin-bottom: 15px;
+    .cart-box {
+      border: 1px solid #ccc;
+      padding: 1rem;
+      margin-top: 2rem;
+      border-radius: 8px;
     }
   </style>
 </head>
-<body class="container">
-  <h2 class="text-primary mt-4 mb-4">Welcome to the Educational Cart</h2>
+<body>
+  <div class="container">
+    <h2 class="text-primary mb-4">Welcome to the Educational Cart</h2>
+    <div id="product-container" class="d-flex flex-wrap"></div>
 
-  <div id="product-container" class="d-flex flex-wrap"></div>
-
-  <div id="cart-display">
-    <h4>🛒 Cart Preview</h4>
-    <ul id="cart-items" class="list-group"></ul>
+    <div class="cart-box">
+      <h5><i class="bi bi-cart4"></i> Cart Preview</h5>
+      <ul id="cart-preview" class="list-group mt-2"></ul>
+    </div>
   </div>
 
   <script>
@@ -38,29 +38,36 @@
         name: "NISM Series XV: Research Analyst",
         price: 399,
         description: "Full-length mock test + solution PDF",
-        image: "https://via.placeholder.com/250x150.png?text=Research+Analyst"
+        image: "https://i.imgur.com/tLn3zjR.png"
       },
       {
         id: "P2",
         name: "Investment Adviser Level 1 (X-A)",
         price: 349,
         description: "Chapterwise quiz + analysis",
-        image: "https://via.placeholder.com/250x150.png?text=IA+Level+1"
+        image: "https://i.imgur.com/JYk9STU.png"
+      },
+      {
+        id: "P3",
+        name: "Algo Strategy Blueprint",
+        price: 799,
+        description: "Access to backtest + delivery logic",
+        image: "" // No image
       }
     ];
 
     const cart = [];
 
     const container = document.getElementById("product-container");
-    const cartList = document.getElementById("cart-items");
+    const cartPreview = document.getElementById("cart-preview");
 
     function renderCart() {
-      cartList.innerHTML = "";
+      cartPreview.innerHTML = "";
       cart.forEach(item => {
         const li = document.createElement("li");
         li.className = "list-group-item";
-        li.textContent = `${item.name} – ₹${item.price}`;
-        cartList.appendChild(li);
+        li.innerText = `${item.name} – ₹${item.price}`;
+        cartPreview.appendChild(li);
       });
     }
 
@@ -69,24 +76,20 @@
       card.className = "card";
 
       card.innerHTML = `
-        <img src="${p.image}" class="card-img-top" alt="${p.name}">
+        ${p.image ? `<img src="${p.image}" alt="${p.name}" class="card-img-top" onerror="this.style.display='none'">` : ''}
         <div class="card-body">
           <h5 class="card-title">${p.name}</h5>
-          <p class="card-text"><strong>₹${p.price}</strong></p>
+          <p><strong>₹${p.price}</strong></p>
           <p class="card-text">${p.description}</p>
-          <button class="btn btn-primary">Add to Cart</button>
+          <button class="btn btn-primary btn-sm">Add to Cart</button>
         </div>
       `;
 
-      const btn = card.querySelector("button");
-      btn.addEventListener("click", () => {
-        if (!cart.find(item => item.id === p.id)) {
-          cart.push(p);
-          renderCart();
-          console.log("Added to cart:", p);
-        } else {
-          console.log("Already in cart:", p);
-        }
+      const button = card.querySelector("button");
+      button.addEventListener("click", () => {
+        cart.push(p);
+        console.log("Added to cart:", p);
+        renderCart();
       });
 
       container.appendChild(card);
