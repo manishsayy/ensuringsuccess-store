@@ -1,18 +1,3 @@
-<!--
-📋 Ensuring Success Project – Cart Version History & Compliance Notes
-🔒 Locked Version: Cart_v1.5_FixedURL.html
-📅 Date: 2025-05-04
-🎯 Purpose: Final working dynamic product cart for GitHub Pages + Google Sheet fetch
-
-🔹 Core Compliance:
-  - No functions were altered (renderProducts, addToCart, renderCart, proceedToCheckout)
-  - HTML layout, styling, cart logic all preserved
-  - ✅ Only fix: fetchProducts() now uses full Apps Script URL
-
-🔗 Final Apps Script URL Used:
-   https://script.google.com/macros/s/AKfycbzkEVafyH8GVVd3asYvE4tgYCRtd4AO8acdtZ9MXs9GoRwNSCpRU8na8YQmibSvL85KHA/exec
--->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -74,17 +59,17 @@
         card.className = "product-card";
 
         const imgTag = document.createElement('img');
-        imgTag.src = p.ImageURL || p.image || '';
-        imgTag.alt = p.Name || p.name;
+        imgTag.src = p.ImageURL || '';
+        imgTag.alt = p.Name;
         imgTag.onerror = function () {
           this.remove();
         };
         card.appendChild(imgTag);
 
         card.innerHTML += `
-          <h5>${p.Name || p.name}</h5>
-          <p><strong>₹${p.Price || p.price}</strong></p>
-          <p>${p.Description || p.description}</p>
+          <h5>${p.Name}</h5>
+          <p><strong>₹${p.Price}</strong></p>
+          <p>${p.Description}</p>
           <button class="btn btn-primary" onclick='addToCart(${JSON.stringify(p)})'>Add to Cart</button>
         `;
         container.appendChild(card);
@@ -93,7 +78,6 @@
 
     function addToCart(product) {
       cart.push(product);
-      console.log("Added to cart:", product);
       renderCart();
     }
 
@@ -103,10 +87,10 @@
 
       let total = 0;
       cart.forEach((item) => {
-        total += parseFloat(item.Price || item.price);
+        total += parseFloat(item.Price);
         const itemEl = document.createElement("div");
         itemEl.className = "border-bottom py-1";
-        itemEl.textContent = `${item.Name || item.name} – ₹${item.Price || item.price}`;
+        itemEl.textContent = `${item.Name} – ₹${item.Price}`;
         cartItems.appendChild(itemEl);
       });
 
@@ -128,7 +112,7 @@
       const payload = {
         email: email,
         refID: refID,
-        total: cart.reduce((sum, item) => sum + parseFloat(item.Price || item.price), 0),
+        total: cart.reduce((sum, item) => sum + parseFloat(item.Price), 0),
         items: cart.map(item => ({
           id: item.ID || item.id,
           name: item.Name || item.name,
@@ -136,8 +120,7 @@
         }))
       };
 
-      console.log("Payload ready to submit:", payload);
-      callBackendAndRedirect(payload); // ✅ Final call
+      callBackendAndRedirect(payload);
     }
 
     function generateRefID() {
@@ -181,7 +164,7 @@
         });
     }
 
-    fetchProducts(); // ✅ Initializer
+    fetchProducts();
   </script>
 </body>
 </html>
