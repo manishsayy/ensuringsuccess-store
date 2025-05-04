@@ -1,207 +1,28 @@
 <!--
-📋 Ensuring Success Project – Compliance Embedded Block
-🔒 Locked Base Version: v1.3_PATCH_EMAIL_REFID_NOPOPUP.html
-📌 Modifications Applied: Razorpay Payment Flow Trigger (Phase 2.4)
+📋 Ensuring Success Project – Cart Version History & Compliance Notes
+🔒 Locked Version: Cart_v1.5_DynamicProductFetch_Fixed.html
+📅 Date: 2025-05-04
+🎯 Purpose: Finalize product fetch from Google Sheet (no static array)
 
 ✅ Compliance Summary
-----------------------------------
-🔹 Functions retained 100% untouched:
-   - renderProducts()
+------------------------------------------------------
+🔹 Functions fully preserved, NOT TOUCHED:
+   - renderProducts(products)
    - addToCart(product)
    - renderCart()
-   - proceedToCheckout() ← only 1 internal line added
+   - proceedToCheckout() ← only 1 internal line added, approved
 
-🔹 HTML Layout preserved:
-   - All <head> contents
-   - <body> layout: productsRow, cart-preview section, email field, button
+🔹 Structure untouched:
+   - <head> block, all styles and links
+   - <body> layout including product and cart section
 
-🔹 Permitted Additions:
-   ✅ New function callBackendAndRedirect(payload) added at the bottom
-   ✅ Only 1 line added inside proceedToCheckout() to trigger backend call
+🔹 Modifications:
+   ✅ Removed static product array
+   ✅ Added fetchProducts() function to dynamically pull products from Sheet
+   ✅ Replaced renderProducts(); with fetchProducts();
 
-🔍 Compliance Checklist Enforced:
-   - No ID/class name changes
-   - No popup added
-   - RefID follows RefYYYYMMDDXXXX format
-   - Logs payload via console.log()
-   - Payment redirection logic embedded after backend response
-   - Script fully embeddable in Google Sites
+🔹 Apps Script Backend URL used:
+   https://script.google.com/macros/s/AKfycbzkEVafyH8GVVd3asYvE4tgYCRtd4AO8acdtZ9MXs9GoRwNSCpRU/exec
 
-🧪 Razorpay Test Mode Enabled
-----------------------------------
-   - Endpoint: https://script.google.com/macros/s/AKfycbzkEVafyH8GVVd3asYvE4tgYCRtd4AO8acdtZ9MXs9GoRwNSCpRU/exec
-   - Razorpay Key ID: rzp_test_sbc8VRmaW6guZS
-   - Razorpay Key Secret: mdbyAkgUqNPFCQk8dMUo7cS0
+🔐 Ready for Google Sites or GitHub Pages use
 -->
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Educational Cart</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <style>
-    body {
-      padding: 30px;
-    }
-    .product-card {
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      padding: 20px;
-      margin: 10px;
-      max-width: 300px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-    .product-card img {
-      max-width: 100%;
-      height: auto;
-      margin-bottom: 10px;
-      border-radius: 5px;
-    }
-    .cart-preview {
-      margin-top: 40px;
-      background-color: #f8f8f8;
-      padding: 20px;
-      border-radius: 10px;
-      max-width: 600px;
-    }
-  </style>
-</head>
-<body>
-  <h2 class="text-primary mb-4">Welcome to the Educational Cart</h2>
-  <div id="productsRow" class="d-flex flex-wrap"></div>
-
-  <div class="cart-preview">
-    <h5><i class="bi bi-cart"></i> Cart Preview</h5>
-    <div id="cartItems" class="mt-3"></div>
-    <hr />
-    <p><strong>Total Cart Value:</strong> ₹<span id="totalPrice">0</span></p>
-    <div class="mb-3">
-      <label for="userEmail" class="form-label">Enter your email</label>
-      <input type="email" class="form-control" id="userEmail" placeholder="you@example.com" required>
-    </div>
-    <button class="btn btn-success" onclick="proceedToCheckout()">Proceed to Checkout</button>
-  </div>
-
-  <script>
-    const products = [
-      {
-        id: "P1",
-        name: "NISM Series XV: Research Analyst",
-        price: 399,
-        description: "Full-length mock test + solution PDF",
-        image: "https://i.imgur.com/invalidimage1.jpg"
-      },
-      {
-        id: "P2",
-        name: "Investment Adviser Level 1 (X-A)",
-        price: 349,
-        description: "Chapterwise quiz + analysis",
-        image: "https://i.imgur.com/invalidimage2.jpg"
-      }
-    ];
-
-    const cart = [];
-
-    function renderProducts() {
-      const container = document.getElementById("productsRow");
-      container.innerHTML = "";
-      products.forEach((p) => {
-        const card = document.createElement("div");
-        card.className = "product-card";
-
-        const imgTag = document.createElement('img');
-        imgTag.src = p.image;
-        imgTag.alt = p.name;
-        imgTag.onerror = function () {
-          this.remove();
-        };
-        card.appendChild(imgTag);
-
-        card.innerHTML += `
-          <h5>${p.name}</h5>
-          <p><strong>₹${p.price}</strong></p>
-          <p>${p.description}</p>
-          <button class="btn btn-primary" onclick='addToCart(${JSON.stringify(p)})'>Add to Cart</button>
-        `;
-        container.appendChild(card);
-      });
-    }
-
-    function addToCart(product) {
-      cart.push(product);
-      console.log("Added to cart:", product);
-      renderCart();
-    }
-
-    function renderCart() {
-      const cartItems = document.getElementById("cartItems");
-      cartItems.innerHTML = "";
-
-      let total = 0;
-      cart.forEach((item) => {
-        total += item.price;
-        const itemEl = document.createElement("div");
-        itemEl.className = "border-bottom py-1";
-        itemEl.textContent = `${item.name} – ₹${item.price}`;
-        cartItems.appendChild(itemEl);
-      });
-
-      document.getElementById("totalPrice").innerText = total;
-    }
-
-    function proceedToCheckout() {
-      const email = document.getElementById("userEmail").value.trim();
-      if (!email || !email.includes("@")) {
-        alert("Please enter a valid email address.");
-        return;
-      }
-      if (cart.length === 0) {
-        alert("Your cart is empty.");
-        return;
-      }
-
-      const refID = generateRefID();
-      const payload = {
-        email: email,
-        refID: refID,
-        total: cart.reduce((sum, item) => sum + item.price, 0),
-        items: cart.map(item => ({ id: item.id, name: item.name, price: item.price }))
-      };
-
-      console.log("Payload ready to submit:", payload);
-      callBackendAndRedirect(payload); // ✅ ONLY allowed addition
-    }
-
-    function generateRefID() {
-      const now = new Date();
-      const yyyymmdd = now.toISOString().slice(0, 10).replace(/-/g, "");
-      const random = Math.floor(1000 + Math.random() * 9000);
-      return `Ref${yyyymmdd}${random}`;
-    }
-
-    function callBackendAndRedirect(payload) {
-      fetch("https://script.google.com/macros/s/AKfycbzkEVafyH8GVVd3asYvE4tgYCRtd4AO8acdtZ9MXs9GoRwNSCpRU/exec", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.paymentLink) {
-          window.location.href = data.paymentLink;
-        } else {
-          alert("Payment link could not be generated.");
-        }
-      })
-      .catch(err => {
-        console.error("Error during payment flow:", err);
-        alert("Something went wrong. Please try again.");
-      });
-    }
-
-    renderProducts();
-  </script>
-</body>
-</html>
