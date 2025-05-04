@@ -1,99 +1,106 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Educational Cart</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
   <style>
-    body {
-      padding: 2rem;
-    }
     .card {
-      margin: 1rem;
-      width: 280px;
+      width: 240px;
+      margin: 10px;
     }
-    .cart-box {
-      border: 1px solid #ccc;
-      padding: 1rem;
-      margin-top: 2rem;
-      border-radius: 8px;
+    .card img {
+      height: 150px;
+      object-fit: cover;
+    }
+    #cart-preview {
+      max-width: 500px;
+      margin-top: 20px;
     }
   </style>
 </head>
-<body>
+<body class="p-4">
   <div class="container">
     <h2 class="text-primary mb-4">Welcome to the Educational Cart</h2>
-    <div id="product-container" class="d-flex flex-wrap"></div>
+    <div class="d-flex flex-wrap" id="product-container"></div>
 
-    <div class="cart-box">
-      <h5><i class="bi bi-cart4"></i> Cart Preview</h5>
-      <ul id="cart-preview" class="list-group mt-2"></ul>
+    <div id="cart-preview" class="border rounded p-3 mt-4 bg-light">
+      <h5><span>🛒</span> Cart Preview</h5>
+      <ul class="list-group mb-2" id="cart-items"></ul>
+      <div><strong>Total:</strong> ₹<span id="total-price">0</span></div>
     </div>
   </div>
 
   <script>
     const products = [
       {
-        id: "P1",
+        id: 'P1',
         name: "NISM Series XV: Research Analyst",
         price: 399,
         description: "Full-length mock test + solution PDF",
-        image: "https://i.imgur.com/tLn3zjR.png"
+        image: "https://via.placeholder.com/250x150.png?text=Research+Analyst"
       },
       {
-        id: "P2",
+        id: 'P2',
         name: "Investment Adviser Level 1 (X-A)",
         price: 349,
         description: "Chapterwise quiz + analysis",
-        image: "https://i.imgur.com/JYk9STU.png"
-      },
-      {
-        id: "P3",
-        name: "Algo Strategy Blueprint",
-        price: 799,
-        description: "Access to backtest + delivery logic",
-        image: "" // No image
+        image: "https://via.placeholder.com/250x150.png?text=IA+Level+1"
       }
     ];
 
     const cart = [];
 
     const container = document.getElementById("product-container");
-    const cartPreview = document.getElementById("cart-preview");
+    const cartItems = document.getElementById("cart-items");
+    const totalPrice = document.getElementById("total-price");
 
-    function renderCart() {
-      cartPreview.innerHTML = "";
-      cart.forEach(item => {
+    function updateCartPreview() {
+      cartItems.innerHTML = "";
+      let total = 0;
+
+      cart.forEach((item) => {
         const li = document.createElement("li");
         li.className = "list-group-item";
         li.innerText = `${item.name} – ₹${item.price}`;
-        cartPreview.appendChild(li);
+        cartItems.appendChild(li);
+        total += item.price;
       });
+
+      totalPrice.innerText = total;
     }
 
-    products.forEach(p => {
+    products.forEach((p) => {
       const card = document.createElement("div");
       card.className = "card";
 
+      const hasImage = p.image && p.image.trim() !== "";
+      const imageTag = hasImage
+        ? `<img src="${p.image}" class="card-img-top" alt="${p.name}" onerror="this.style.display='none';"/>`
+        : "";
+
       card.innerHTML = `
-        ${p.image ? `<img src="${p.image}" alt="${p.name}" class="card-img-top" onerror="this.style.display='none'">` : ''}
+        ${imageTag}
         <div class="card-body">
-          <h5 class="card-title">${p.name}</h5>
-          <p><strong>₹${p.price}</strong></p>
+          <h5 class="card-title font-weight-bold">${p.name}</h5>
+          <p class="card-text"><strong>₹${p.price}</strong></p>
           <p class="card-text">${p.description}</p>
           <button class="btn btn-primary btn-sm">Add to Cart</button>
         </div>
       `;
 
-      const button = card.querySelector("button");
-      button.addEventListener("click", () => {
+      const btn = card.querySelector("button");
+      btn.addEventListener("click", () => {
         cart.push(p);
         console.log("Added to cart:", p);
-        renderCart();
+        updateCartPreview();
       });
 
       container.appendChild(card);
     });
+
+    updateCartPreview();
   </script>
 </body>
 </html>
