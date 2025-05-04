@@ -1,4 +1,4 @@
-<!-- Educational Cart – Ensuring Success (v1.5_COMPLIANCE_LOCKED_RESTORED) -->
+<!-- Educational Cart – Ensuring Success (v1.6_COMPLIANCE_LOCKED_PATCHED) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -43,13 +43,14 @@
           container.innerHTML = "";
 
           products.forEach(p => {
-            const card = document.createElement('div');
-            card.className = 'col-md-4 mb-4';
+            const col = document.createElement('div');
+            col.className = 'col-md-4 mb-4';
+
             const imgTag = p["Image URL"]
               ? `<img src="${p["Image URL"]}" class="card-img-top" alt="${p.Name}" onerror="this.style.display='none';">`
               : "";
 
-            card.innerHTML = `
+            col.innerHTML = `
               <div class="card h-100 shadow-sm">
                 ${imgTag}
                 <div class="card-body">
@@ -59,7 +60,7 @@
                   <button class="btn btn-primary" onclick='addToCart(${JSON.stringify(p)})'>Add to Cart</button>
                 </div>
               </div>`;
-            container.appendChild(card);
+            container.appendChild(col);
           });
         })
         .catch(error => {
@@ -128,7 +129,7 @@
       .then(res => res.json())
       .then(data => {
         console.log("✅ Submission response:", data);
-        // 🔄 Future Phase: Redirect to payment or show confirmation page
+        // Future: Redirect or Razorpay integration
       });
     }
 
@@ -136,3 +137,4 @@
   </script>
 </body>
 </html>
+
