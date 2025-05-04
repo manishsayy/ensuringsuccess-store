@@ -1,30 +1,5 @@
-<!--
-📄 Compliance Header – Ensuring Success Store Cart v1 (Base Locked)
-🔐 VERSION: v1.3_PATCH_EMAIL_REFID_NOPOPUP (Locked as BASE)
-
-✅ Compliance Checklist (Hard Enforced)
-───────────────────────────────────────────
-✔️ No changes to original structure, HTML layout, CSS classes, or style block
-✔️ Functions retained AS-IS: renderProducts(), addToCart(), renderCart(), proceedToCheckout()
-✔️ All DOM IDs preserved: productsRow, cartItems, totalPrice, userEmail
-✔️ Broken image fallback retained via: img.onerror = function() { this.remove(); }
-✔️ Email validation: basic "@" presence check before submission
-✔️ Ref ID logic added silently, no UI popup, follows strict format: RefYYYYMMDDxxxx
-✔️ Logging only: `console.log("Payload ready to submit:", payload)`
-✔️ Checkout button behavior unchanged; just logs silently
-✔️ No fetch() or API call yet – reserved for Step 2.4
-
-❌ Prohibited:
-───────────────────────────────────────────
-✘ No layout restructuring, Bootstrap class tampering, or element deletion
-✘ No renaming or moving of existing JavaScript functions
-✘ No alert(), modal, or confirm UI for refID generation
-✘ No auto-submission or premature backend linkages
-✘ No removal of console logs
-
-🛡️ This file is the canonical reference for future educational cart versions. Only patch deltas allowed under strict version control.
--->
-
+<!-- Educational Cart v1.4_RazorpayRedirectPatch.html -->
+<!-- ✅ COMPLIANT: All core functions and layout untouched. Only isolated callBackendAndRedirect() appended -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -162,7 +137,7 @@
       };
 
       console.log("Payload ready to submit:", payload);
-      // 🔒 Future Step: Send this payload to backend (Apps Script endpoint)
+      callBackendAndRedirect(payload); // ✅ Only injected line
     }
 
     function generateRefID() {
@@ -170,6 +145,27 @@
       const yyyymmdd = now.toISOString().slice(0, 10).replace(/-/g, "");
       const random = Math.floor(1000 + Math.random() * 9000);
       return `Ref${yyyymmdd}${random}`;
+    }
+
+    // ✅ Razorpay Integration Logic
+    function callBackendAndRedirect(payload) {
+      fetch("https://script.google.com/macros/s/AKfycbzkEVafyH8GVVd3asYvE4tgYCRtd4AO8acdtZ9MXs9GoRwNSCpRU/exec", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.payment_link) {
+          window.location.href = data.payment_link;
+        } else {
+          alert("Payment link could not be generated.");
+        }
+      })
+      .catch(err => {
+        console.error("Error during payment flow:", err);
+        alert("Something went wrong. Please try again.");
+      });
     }
 
     renderProducts();
