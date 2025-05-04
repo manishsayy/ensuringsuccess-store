@@ -2,166 +2,104 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Educational Cart</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
   <style>
-    body {
-      padding: 30px;
-    }
-    .product-card {
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      padding: 20px;
-      margin: 10px;
-      max-width: 300px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-    .product-card img {
-      max-width: 100%;
-      height: auto;
-      margin-bottom: 10px;
-      border-radius: 5px;
-    }
-    .cart-preview {
-      margin-top: 40px;
-      background-color: #f8f8f8;
-      padding: 20px;
-      border-radius: 10px;
-      max-width: 600px;
-    }
+    .product-card img { max-height: 150px; object-fit: contain; }
+    .product-card { min-height: 100%; }
+    .fallback-img { background-color: #eee; width: 100%; height: 150px; display: flex; align-items: center; justify-content: center; color: #888; font-size: 14px; }
   </style>
 </head>
-<body>
-  <h2 class="text-primary mb-4">Welcome to the Educational Cart</h2>
-  <div id="productsRow" class="d-flex flex-wrap"></div>
+<body class="bg-light">
+  <div class="container my-5">
+    <h2 class="mb-4 text-primary">Welcome to the Educational Cart</h2>
+    <div id="product-container" class="row g-4"></div>
 
-  <div class="cart-preview">
-    <h5><i class="bi bi-cart"></i> Cart Preview</h5>
-    <div id="cartItems" class="mt-3"></div>
-    <hr />
-    <p><strong>Total Cart Value:</strong> ₹<span id="totalPrice">0</span></p>
+    <hr class="my-4" />
+    <h5>Cart Preview</h5>
+    <p><strong>Total Cart Value:</strong> ₹<span id="total-value">0</span></p>
     <div class="mb-3">
-      <label for="userEmail" class="form-label">Enter your email</label>
-      <input type="email" class="form-control" id="userEmail" placeholder="you@example.com" required>
+      <label for="email" class="form-label">Enter your email</label>
+      <input type="email" class="form-control" id="email" placeholder="you@example.com" required />
     </div>
     <button class="btn btn-success" onclick="proceedToCheckout()">Proceed to Checkout</button>
   </div>
 
   <script>
-    const cart = [];
+    const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzkEVafyH8GVd3asYvE4tgYCRtd4AO8acdtZ9MXs9GoRwNScpRU8na8YQmibSvL85KHA/exec';
+    let cart = [];
+
+    async function fetchProducts() {
+      try {
+        const res = await fetch(BACKEND_URL);
+        const data = await res.json();
+        if (!Array.isArray(data)) throw new Error("Invalid response");
+        renderProducts(data);
+      } catch (err) {
+        document.getElementById('product-container').innerHTML = `<p class="text-danger">Failed to load products.</p>`;
+      }
+    }
 
     function renderProducts(products) {
-      const container = document.getElementById("productsRow");
-      container.innerHTML = "";
-      products.forEach((p) => {
-        const card = document.createElement("div");
-        card.className = "product-card";
-
-        const imgTag = document.createElement('img');
-        imgTag.src = p.ImageURL || '';
-        imgTag.alt = p.Name;
-        imgTag.onerror = function () {
-          this.remove();
-        };
-        card.appendChild(imgTag);
-
-        card.innerHTML += `
-          <h5>${p.Name}</h5>
-          <p><strong>₹${p.Price}</strong></p>
-          <p>${p.Description}</p>
-          <button class="btn btn-primary" onclick='addToCart(${JSON.stringify(p)})'>Add to Cart</button>
-        `;
-        container.appendChild(card);
+      const container = document.getElementById('product-container');
+      container.innerHTML = '';
+      products.forEach(p => {
+        const col = document.createElement('div');
+        col.className = 'col-md-4';
+        col.innerHTML = `
+          <div class="card product-card h-100">
+            ${p.imageURL ? `<img src="${p.imageURL}" class="card-img-top" onerror="this.outerHTML='<div class=\\'fallback-img\\'>No Image</div>'">` : `<div class="fallback-img">No Image</div>`}
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title">${p.name}</h5>
+              <p class="card-text">${p.description || ''}</p>
+              <p><strong>₹${p.price}</strong></p>
+              <button class="btn btn-outline-primary mt-auto" onclick='addToCart(${JSON.stringify(p)})'>Add to Cart</button>
+            </div>
+          </div>`;
+        container.appendChild(col);
       });
     }
 
     function addToCart(product) {
-      cart.push(product);
-      renderCart();
+      if (!cart.some(item => item.id === product.id)) {
+        cart.push(product);
+        updateCart();
+      }
     }
 
-    function renderCart() {
-      const cartItems = document.getElementById("cartItems");
-      cartItems.innerHTML = "";
-
-      let total = 0;
-      cart.forEach((item) => {
-        total += parseFloat(item.Price);
-        const itemEl = document.createElement("div");
-        itemEl.className = "border-bottom py-1";
-        itemEl.textContent = `${item.Name} – ₹${item.Price}`;
-        cartItems.appendChild(itemEl);
-      });
-
-      document.getElementById("totalPrice").innerText = total;
+    function updateCart() {
+      const total = cart.reduce((sum, item) => sum + Number(item.price), 0);
+      document.getElementById('total-value').textContent = total;
     }
 
-    function proceedToCheckout() {
-      const email = document.getElementById("userEmail").value.trim();
-      if (!email || !email.includes("@")) {
-        alert("Please enter a valid email address.");
-        return;
-      }
-      if (cart.length === 0) {
-        alert("Your cart is empty.");
-        return;
-      }
+    async function proceedToCheckout() {
+      const email = document.getElementById('email').value;
+      if (!email || !email.includes('@')) return alert("Please enter a valid email.");
+      if (cart.length === 0) return alert("Cart is empty.");
 
-      const refID = generateRefID();
+      const refID = 'REF' + Date.now();
       const payload = {
-        email: email,
-        refID: refID,
-        total: cart.reduce((sum, item) => sum + parseFloat(item.Price), 0),
-        items: cart.map(item => ({
-          id: item.ID || item.id,
-          name: item.Name || item.name,
-          price: item.Price || item.price
-        }))
+        email,
+        refID,
+        total: cart.reduce((sum, item) => sum + Number(item.price), 0),
+        items: cart.map(p => ({ id: p.id, name: p.name }))
       };
 
-      callBackendAndRedirect(payload);
-    }
-
-    function generateRefID() {
-      const now = new Date();
-      const yyyymmdd = now.toISOString().slice(0, 10).replace(/-/g, "");
-      const random = Math.floor(1000 + Math.random() * 9000);
-      return `Ref${yyyymmdd}${random}`;
-    }
-
-    function callBackendAndRedirect(payload) {
-      fetch("https://script.google.com/macros/s/AKfycbzkEVafyH8GVVd3asYvE4tgYCRtd4AO8acdtZ9MXs9GoRwNSCpRU8na8YQmibSvL85KHA/exec", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.paymentLink) {
-          window.location.href = data.paymentLink;
-        } else {
-          alert("Payment link could not be generated.");
-        }
-      })
-      .catch(err => {
-        console.error("Error during payment flow:", err);
-        alert("Something went wrong. Please try again.");
-      });
-    }
-
-    function fetchProducts() {
-      fetch("https://script.google.com/macros/s/AKfycbzkEVafyH8GVVd3asYvE4tgYCRtd4AO8acdtZ9MXs9GoRwNSCpRU8na8YQmibSvL85KHA/exec")
-        .then(res => res.json())
-        .then(data => {
-          const filtered = data.filter(p => p.Type === "educational" && p.Active === "Y");
-          renderProducts(filtered);
-        })
-        .catch(err => {
-          console.error("Error fetching products:", err);
-          document.getElementById("productsRow").innerHTML = `
-            <p class="text-danger">Failed to load products.</p>`;
+      try {
+        const res = await fetch(BACKEND_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
         });
+        const result = await res.json();
+        if (result.paymentLink) {
+          window.location.href = result.paymentLink;
+        } else {
+          alert("Error: " + (result.error || 'Unknown error.'));
+        }
+      } catch (err) {
+        alert("Checkout failed. Please try again.");
+      }
     }
 
     fetchProducts();
