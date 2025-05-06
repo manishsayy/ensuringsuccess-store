@@ -2,104 +2,88 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Educational Cart</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Educational Store | Ensuring Success</title>
   <style>
-    .product-card img { max-height: 150px; object-fit: contain; }
-    .product-card { min-height: 100%; }
-    .fallback-img { background-color: #eee; width: 100%; height: 150px; display: flex; align-items: center; justify-content: center; color: #888; font-size: 14px; }
+    body { font-family: Arial; margin: 20px; }
+    .product { border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 8px; }
+    .product img { max-width: 100px; display: block; margin-bottom: 10px; }
+    .cart { border-top: 2px solid #333; margin-top: 20px; padding-top: 10px; }
   </style>
 </head>
-<body class="bg-light">
-  <div class="container my-5">
-    <h2 class="mb-4 text-primary">Welcome to the Educational Cart</h2>
-    <div id="product-container" class="row g-4"></div>
+<body>
+  <h1>🎓 Educational Products</h1>
+  <div id="product-list">Loading products...</div>
 
-    <hr class="my-4" />
-    <h5>Cart Preview</h5>
-    <p><strong>Total Cart Value:</strong> ₹<span id="total-value">0</span></p>
-    <div class="mb-3">
-      <label for="email" class="form-label">Enter your email</label>
-      <input type="email" class="form-control" id="email" placeholder="you@example.com" required />
-    </div>
-    <button class="btn btn-success" onclick="proceedToCheckout()">Proceed to Checkout</button>
+  <div class="cart">
+    <h2>🛒 Your Cart</h2>
+    <ul id="cart-items"></ul>
+    <p><strong>Total:</strong> ₹<span id="total">0</span></p>
+    <input type="email" id="userEmail" placeholder="Enter your email" required />
+    <br/><br/>
+    <button onclick="proceedToCheckout()">Proceed to Checkout</button>
   </div>
 
   <script>
-    const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbzkEVafyH8GVd3asYvE4tgYCRtd4AO8acdtZ9MXs9GoRwNScpRU8na8YQmibSvL85KHA/exec';
+    const SHEET_WORKER_URL = "https://steep-night-f25d.ensuringsuccess.workers.dev"; // 👈 your hidden backend
+
+    let products = [];
     let cart = [];
 
     async function fetchProducts() {
-      try {
-        const res = await fetch(BACKEND_URL);
-        const data = await res.json();
-        if (!Array.isArray(data)) throw new Error("Invalid response");
-        renderProducts(data);
-      } catch (err) {
-        document.getElementById('product-container').innerHTML = `<p class="text-danger">Failed to load products.</p>`;
-      }
+      const res = await fetch(SHEET_WORKER_URL);
+      const csv = await res.text();
+      const rows = csv.trim().split("\n").map(r => r.split(","));
+      const headers = rows[0];
+      products = rows.slice(1).map(row => {
+        let p = {};
+        headers.forEach((h, i) => p[h.trim()] = row[i]?.trim());
+        return p;
+      }).filter(p => p.Type === "educational" && p.Status === "active");
+      renderProducts();
     }
 
-    function renderProducts(products) {
-      const container = document.getElementById('product-container');
-      container.innerHTML = '';
+    function renderProducts() {
+      const container = document.getElementById("product-list");
+      container.innerHTML = "";
       products.forEach(p => {
-        const col = document.createElement('div');
-        col.className = 'col-md-4';
-        col.innerHTML = `
-          <div class="card product-card h-100">
-            ${p.imageURL ? `<img src="${p.imageURL}" class="card-img-top" onerror="this.outerHTML='<div class=\\'fallback-img\\'>No Image</div>'">` : `<div class="fallback-img">No Image</div>`}
-            <div class="card-body d-flex flex-column">
-              <h5 class="card-title">${p.name}</h5>
-              <p class="card-text">${p.description || ''}</p>
-              <p><strong>₹${p.price}</strong></p>
-              <button class="btn btn-outline-primary mt-auto" onclick='addToCart(${JSON.stringify(p)})'>Add to Cart</button>
-            </div>
-          </div>`;
-        container.appendChild(col);
+        const div = document.createElement("div");
+        div.className = "product";
+        div.innerHTML = `
+          <img src="${p['Image URL'] || ''}" onerror="this.style.display='none'" />
+          <strong>${p['Product Name']}</strong><br/>
+          ₹${p['Price']}<br/>
+          <button onclick='addToCart(${JSON.stringify(p)})'>Add to Cart</button>
+        `;
+        container.appendChild(div);
       });
     }
 
     function addToCart(product) {
-      if (!cart.some(item => item.id === product.id)) {
-        cart.push(product);
-        updateCart();
-      }
+      cart.push(product);
+      renderCart();
     }
 
-    function updateCart() {
-      const total = cart.reduce((sum, item) => sum + Number(item.price), 0);
-      document.getElementById('total-value').textContent = total;
+    function renderCart() {
+      const list = document.getElementById("cart-items");
+      const totalSpan = document.getElementById("total");
+      list.innerHTML = "";
+      let total = 0;
+      cart.forEach(p => {
+        const li = document.createElement("li");
+        li.textContent = `${p['Product Name']} - ₹${p['Price']}`;
+        list.appendChild(li);
+        total += parseFloat(p['Price']);
+      });
+      totalSpan.textContent = total;
     }
 
-    async function proceedToCheckout() {
-      const email = document.getElementById('email').value;
-      if (!email || !email.includes('@')) return alert("Please enter a valid email.");
-      if (cart.length === 0) return alert("Cart is empty.");
-
-      const refID = 'REF' + Date.now();
-      const payload = {
-        email,
-        refID,
-        total: cart.reduce((sum, item) => sum + Number(item.price), 0),
-        items: cart.map(p => ({ id: p.id, name: p.name }))
-      };
-
-      try {
-        const res = await fetch(BACKEND_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const result = await res.json();
-        if (result.paymentLink) {
-          window.location.href = result.paymentLink;
-        } else {
-          alert("Error: " + (result.error || 'Unknown error.'));
-        }
-      } catch (err) {
-        alert("Checkout failed. Please try again.");
-      }
+    function proceedToCheckout() {
+      const email = document.getElementById("userEmail").value.trim();
+      if (!email) return alert("Please enter your email.");
+      const refId = `REF${Date.now()}`;
+      alert(`✅ Order Ref ID: ${refId}\nEmail: ${email}\nTotal: ₹${document.getElementById("total").textContent}`);
+      // Next: Call backend to log order + create Razorpay link
     }
 
     fetchProducts();
